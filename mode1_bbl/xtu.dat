@@ -1,0 +1,2 @@
+ VARIABLES ="x","time","u","u_mid","u_pyc"
+ ZONE I=         128 ,J=         101 , F=POINT
