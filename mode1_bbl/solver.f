@@ -8,7 +8,7 @@ c*********************************************************************
 c
       include 'dim.h'
 
-      parameter (dtanim = 1.0) ! How often is data dumped out
+      parameter (dtanim = 5.0) ! How often is data dumped out
 c
       include 'comflow.h'
       include 'commatrix.h'
@@ -41,7 +41,7 @@ c
       complex usnm(nzloc),vsnm(nzloc),wsnm(nzloc)
       complex rot,rotn,rotnm,rotf,rx
       character*80 fout
-      character*7 fmt2
+      character*9 fmt2
       character*30 fspec
      
    
@@ -154,11 +154,11 @@ c        endif
 c         timeout = t
           if(istart.eq.1) write(*,*)'ianimc=',ianimc
           timeout = ianimc
-          fmt2='(i1,a4)'
-          if (nint(timeout).ge.10)  fmt2='(i5,a4)'
-          if (nint(timeout).ge.100) fmt2='(i5,a4)'
-          if (nint(timeout).ge.1000) fmt2='(i5,a4)'
-          if (nint(timeout).ge.10000) fmt2='(i5,a4)'
+          fmt2='(i5.5,a4)'
+          if (nint(timeout).ge.10)  fmt2='(i5.5,a4)'
+          if (nint(timeout).ge.100) fmt2='(i5.5,a4)'
+          if (nint(timeout).ge.1000) fmt2='(i5.5,a4)'
+          if (nint(timeout).ge.10000) fmt2='(i5.5,a4)'
           fspec = 'vortanimout_'
           fout = fspec
           write(unit=fout(13:23),fmt=fmt2) ianimc,'.dat'
