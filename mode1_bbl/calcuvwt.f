@@ -291,12 +291,12 @@ C-dudz = 0 at top, u = 0 at bottom
            ifuncreal = 0.
            ifbctop = ineumann
 !          ifbctop = idirichlet
-           ifbcbot = ineumann
-!          ifbcbot = idirichlet
-           bcrtop = 0.! uw(i,j,2)
-           bcrbot = 0. ! uwuw(i,j,1)
-           bcitop = 0. !uw(i+1,j,2)
-           bcibot = 0. !uw(i+1,j,1)
+          ifbcbot = ineumann
+!           ifbcbot = idirichlet
+           bcrtop = 0.0!uw(i,j,2)
+           bcrbot = 0.0!uw(i,j,1)
+           bcitop = 0.0!uw(i+1,j,2)
+           bcibot = 0.0!uw(i+1,j,1)
 
 C-Call penalty method for calculation of solution
 C-(Method borrowed from Hesthaven, 97)
@@ -367,6 +367,11 @@ C-Now calculate actual intermediate velocity u^*
              u(i+1,j,k) = fi(k) 
            enddo
 
+! JMS - test
+
+!           open(53,file='testu1.dat') 
+!           write(53,'(1x,3(e14.7,3x))') fr,(nz-2),fr(nz-1),fr(nz)
+           
 C*************
 C*V-VELOCITY**
 C*************
@@ -401,8 +406,8 @@ C-dvdz = 0 at top, v = 0 at bottom
            ifuncreal = 0.
            ifbctop = ineumann
 c          ifbctop = idirichlet
-!          ifbcbot = idirichlet
-           ifbcbot = ineumann
+!           ifbcbot = idirichlet
+          ifbcbot = ineumann
            bcrtop = 0.         
            bcrbot = 0.         
            bcitop = 0.         
@@ -521,10 +526,10 @@ C-Set up RHS (imaginary and real)
 C-Set up BC's. This is not a real function
 C-dudz = 0 at top, u = 0 at bottom
              ifuncreal = 0.
-c            ifbctop = ineumann
+!            ifbctop = ineumann
            ifbctop = idirichlet
-c          ifbcbot = ineumann
-             ifbcbot = idirichlet
+!           ifbcbot = ineumann
+            ifbcbot = idirichlet
              bcrtop = 0.         
              bcrbot = 0.         
              bcitop = 0.         

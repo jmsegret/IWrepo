@@ -8,7 +8,7 @@ c*********************************************************************
 c
       include 'dim.h'
 
-      parameter (dtanim = 5.0) ! How often is data dumped out
+!      parameter (dtanim = 5.0) ! How often is data dumped out
 c
       include 'comflow.h'
       include 'commatrix.h'
@@ -54,7 +54,8 @@ c     include 'equivflowprev.h'
       common /Dump/ Tdump,Tx
       common /anim/ianim,ianimc      
       common /deriv/xdudz,xdwdx,xdtdz
-
+! JMS -common
+      common /dtanimation/ dtanim,fwave 
 
 
       rx = -1.0*cmplx(0.,1.)      
@@ -182,7 +183,7 @@ c         timeout = t
  
                 vorty = dwdx(i,j,k) - dudz(i,j,k)     
 
-                write(500,'(1x,6(e14.7,3x))') xx,zz,u(i,j,k),w(i,j,k),
+                write(500,'(1x,6(F25.16,3x))') xx,zz,u(i,j,k),w(i,j,k),
      >         temp(i,j,k),
 !    >         (-grav*dtdz(i,j,k)/rho0),
      >         temp(i,j,k)+rhomean(zz,zlen,grav,rho0,brunt)
@@ -394,15 +395,21 @@ c    >rotf,rot,rotn,rotnm
 
 C-Final loop: Update u,v,w,T  at intermediate level with AB3 of 
 C-n.l. term and BDF of variables at preceding timesteps
+
+! JMS -Test
+!      open(54,file='testu.dat')
+
       do k=1,nz
         do j=1,ny
           do i=1,nxpp            
-
+              xdummy = u(i,j,k)
               u(i,j,k) = dt*su(i,j,k)
      >              + bdf1*u(i,j,k)
      >              + bdf2*un(i,j,k)
      >              + bdf3*unm(i,j,k)
-
+!              if (k.eq.nz) then
+!              write(54,'(1x,3(e14.7,3x))') z(k),xdummy, u(i,j,k)
+!              endif 
               v(i,j,k) = dt*sv(i,j,k)
      >              + bdf1*v(i,j,k)
      >              + bdf2*vn(i,j,k)
@@ -569,6 +576,14 @@ c     complex dtdxc(nxhp,ny,nz),dtdyc(nxhp,ny,nz)
       equivalence (skewsym1,skewsym1c),(skewsym2,skewsym2c)
       include 'equivscratch.h'
 c     equivalence (dtdx,dtdxc),(dtdy,dtdyc)
+
+! JMS -common
+      common /dtanimation/ dtanim,fwave
+
+
+
+
+
 
 
 C-**PD: This is a fossil comment from Shari's code** 
@@ -826,10 +841,12 @@ C-TEMPERATURE
        
 C-FORCING TERMS DUE TO SOLITON
 C-PD: 2/24/04 = By mean here, we mean wave contributions. 
-         
+
+! JMS-test
+!         open(53,file='testsu.dat')
         
-       do k=2,nz ! Bottom point overlooked because of solid wall
-                 ! where forcing has no meaning
+       do k=1,nz ! Bottom point overlooked because of solid wall
+                 ! where xorcing has no meaning
 
          zz = z(k)
 c         xphiz=phiz(zz)
@@ -848,13 +865,22 @@ c           if (t.lt.600)fcshear=0
 c           if(t.ge.0)fcshear=1
 c            if(i.eq.32)write(*,*)'dtdx=',dtdx(i,j,k),'dwdx',dwdx(i,j,k)
 c             fcshear=1.0 
-c          write(*,*)'uo',uo,'fcshear',xomega
+C          write(*,*)'uo',uo,'fcshear',xomega
 
           advmean = umwv(i,k) +
      >           uo*fcshear*fshear(zz,zdim,zsh,xacu)
-     
+!            if (zz.eq.z(nz)) then  
+!             write(53,'(1x,2(e14.7,3x))') zz,su(i,j,k)
+!            endif 
+
+! trying to find why u is getting set to zero at top boundary 
+
+             xdummy = su(i,j,k)
              su(i,j,k) = su(i,j,k) - advmean*dudx(i,j,k) 
      >                             - wmwv(i,k)*dudz(i,j,k)
+!             if (zz.eq.z(nz)) then 
+!             write(53,'(1x,3(e14.7,3x))') zz,xdummy,su(i,j,k)
+!             endif 
 c**********this accounts for -U(z)du'/dx source term
              sv(i,j,k) = sv(i,j,k) - advmean*dvdx(i,j,k) 
      >                             - wmwv(i,k)*dvdz(i,j,k)
@@ -867,6 +893,8 @@ c************** this accounts for -U(z)dw'/dx term
      >                             - wmwv(i,k)*dtdz(i,j,k)
 c*************** this accounts for -U(z)drho'dx term
 
+         
+
 C-2) Advection of mean flow (take shear into account) by perturbation
 c-(u,w,rho) eqns.
              
@@ -875,6 +903,11 @@ c-(u,w,rho) eqns.
              su(i,j,k) = su(i,j,k) - u(i,j,k)*dumdx(i,k)
      >                             - w(i,j,k)*dumdz(i,k)
      >                             - w(i,j,k)*dusheardz 
+
+             if (zz.eq.z(nz)) then 
+             write(53,'(1x,3(e14.7,3x))') zz,xdummy,su(i,j,k)
+             endif 
+
 c******** this accounts for -w'dU(z)/dz term
              sw(i,j,k) = sw(i,j,k) - u(i,j,k)*dwmdx(i,k)
      >                             - w(i,j,k)*dwmdz(i,k)
@@ -907,14 +940,14 @@ c           open(679,file='testsolver1.dat')
 
            forceu_rhs = forceu(xx,zz,t,
      >                  xacrit,xkcrit,xmcrit,xomega,
-     >                  zdim,umax)
+     >                  zdim,umax,fwave)
            forcew_rhs = forcew(xx,zz,t,
      >                  xacrit,xkcrit,xmcrit,xomega,
-     >                  zdim,umax)
+     >                  zdim,umax,fwave)
            forcerho_rhs = forcerho(xx,zz,t,
      >                  xacrit,xkcrit,xmcrit,xomega,
      >                  zdim,umax,
-     >                  brunt,rho0,grav)
+     >                  brunt,rho0,grav,fwave)
 
            su(i,j,k) = su(i,j,k) + forceu_rhs
 
@@ -969,7 +1002,7 @@ c          if(i.eq.32)write(564,*)zz,xphiz
          
        enddo
 
-       write(*,*) 'Value of FORCING function ',phit(t,xomega)
+       write(*,*) 'Value of FORCING function ',phit(t,xomega,fwave)
 
        if(istep.eq.1) then
             close(660)

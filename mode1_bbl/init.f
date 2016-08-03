@@ -161,8 +161,8 @@ c           ox(ijk) = 0.0
 c           ox(ij)  = 0.0 
 
 c-Constant flux temperature BC's for stratified flow
-c           ox(i,j,nz) = 1.0
-c           ox(i,j,1) = 1.0
+!           ox(i,j,nz) = 1.0
+!           ox(i,j,1) = 1.0
 c-Fixed temperatures at boundaries
             ox(i,j,nz) = 0.0
             temp(i,j,nz)=0.0 
@@ -173,8 +173,11 @@ c-Set BC values for velocity field (oy-u, oz-v, ozz-w)
 c-Assumes solid bottom wall and free slip upper surface.
 c-u-perturbation at bottom is such that soliton should
 c-match free stream (remember, moving reference frame)
-            oy(i,j,1) =  0.0
-            oy(i,j,nz) =  0. 
+
+! JMS-edit try to get bc correct
+
+            oy(i,j,1) = 1.0
+            oy(i,j,nz) = 1.0
             oz(i,j,1) = 0.
             oz(i,j,nz) = 0.
             ozz(i,j,1) = 0.

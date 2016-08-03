@@ -324,26 +324,29 @@ c xkcrit,xmcrit , and xomega  are dimensional quantities
 !
       function forceu(x,z,t,
      >                xacrit,xkcrit,xmcrit,xomega,
-     >                zdim,umax)
+     >                zdim,umax,fwave)
 c- rampu-up of source terms A.M.A. 03-03-2008 
            implicit none 
            real sinf,cosf,veldim,forceund,wzp
            real x,z,t,brunt,PI,phit,forceu,
      >                xacrit,xkcrit,xmcrit,xomega,
-     >                zdim,umax
+     >                zdim,umax,fwave
 
 !-Target velocity is u(x,z,t) = (-1/k)*W'(z)*sin(k*x-omega*t)
 
        wzp = xmcrit*cos(xmcrit*z) ! Vertical Eigenfunction z-derivative
        sinf = sin( xkcrit*x - xomega*t )
        cosf = cos( xkcrit*x - xomega*t ) 
+       
+!      forceu =0.
 
+!#if 0
        forceu = -(1/xkcrit)*
      >          (xacrit*umax)*  
      >          wzp*sinf*
      >          umax/zdim*
-     >          phit(t,xomega)
-
+     >          phit(t,xomega,fwave)
+!#endif
 
         return
         end
@@ -351,29 +354,32 @@ c- rampu-up of source terms A.M.A. 03-03-2008
 !-----------
 c-w-momentum
 !-----------
-
+ 
       function forcew(x,z,t,
      >                xacrit,xkcrit,xmcrit,xomega,
-     >                zdim,umax)
+     >                zdim,umax,fwave)
          implicit none
           real sinf,cosf,veldim,forcewnd,wz
           real x,z,t,brunt,phit,forcew,
      >                xacrit,xkcrit,xmcrit,xomega,
-     >                zdim,umax
+     >                zdim,umax,fwave
 
 !-Target velocity is w(x,z,t) = W(z)*cos(k*x-omega*t)
 
         wz = sin(xmcrit*z) ! Vertical Eigenfunction
         cosf = cos( xkcrit*x  - xomega*t )
 
+!        forcew =0.
+
+!#if 0
         forcew = (xacrit*umax)*
      >           wz*cosf*
      >           (umax/zdim)*
-     >           phit(t,xomega)
-
+     >           phit(t,xomega,fwave)
+!#endif 
       return
       end
-       
+  
 !---------------------
 c-Density perturbation
 !---------------------
@@ -381,14 +387,14 @@ c-Density perturbation
       function forcerho(x,z,t,
      >                  xacrit,xkcrit,xmcrit,xomega,
      >                  zdim,umax,
-     >                  brunt,rho0,grav)
+     >                  brunt,rho0,grav,fwave)
 
          implicit none 
          real sinf,cosf,veldim,forcerhond,wz
          real xomegandim, rhodim,forcerho,rho0
          real x,z,t,fzlocp,brunt,grav,
      >             phit, xacrit,xkcrit,xmcrit,xomega,
-     >              PI,zdim,umax
+     >              PI,zdim,umax,fwave
 
 !-Target density is rho(x,z,t) = -(1/omega)*N^2*(rho0/g)*W(z)*sin(k*x-omega*t)
 
@@ -396,13 +402,17 @@ c-Density perturbation
         sinf = sin( xkcrit*x  - xomega*t )
 
         wz = sin(xmcrit*z) ! Vertical Eigenfunction
-        
+       
+
+!        forcerho = 0.0
+ 
+!#if 0
         forcerho = (xacrit*umax)*
      >             wz*sinf*
      >             -(1/xomega)*brunt*brunt*(rho0/grav)*
      >            (umax/zdim)*
-     >            phit(t,xomega)
-
+     >            phit(t,xomega,fwave)
+!#endif 
         return
         end
 
@@ -411,9 +421,13 @@ c-Density perturbation
 !----------------------------------------
 
 
-         function phit(t,xomega)
-         implicit none
-         real t,xomega,phit,twave,pi2,omegaenv
+         function phit(t,xomega,fwave)
+
+         
+
+!         implicit none
+         real t,xomega,phit,twave,pi2,omegaenv,fwave
+
 
          pi2 = 8.*atan(1.0)
          twave = pi2/xomega
@@ -421,7 +435,9 @@ c-Density perturbation
 
 !-Forcing is turned off after one wave period
 
-         if (t <= 8.*twave) then
+! fwave is the number of wave periods to force for 
+
+         if (t <= fwave*twave) then
            phit = 1. !cos(omegaenv*t)
          else
            phit = 0.

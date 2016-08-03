@@ -111,6 +111,10 @@ c-IMSL related bullshit for timing
 c       common  /forcef/  phiz(nz)
        common /domlength/ ZL,Zcur
 
+
+! JMS - common 
+
+        common /dtanimation/dtanim,fwave
 c          tzmode=100000.0        
  
            fcshear=0.000
@@ -178,7 +182,8 @@ c  i0 = 0: For given value of dt, when restarting a run, how many
 c          timesteps from t=0 is restart time.
 c
 c-------------------------------------------------------------------
-      namelist/inputs/ istart,dtin,nsteps,tanim,iform,cdtin
+      namelist/inputs/ istart,dtin,nsteps,tanim,iform,cdtin,waveperiods,
+     >fwave,dtanim
       namelist/params/ xlen,ylen,zlen,brunt,xnu,xkappa,grav,
      >expan,umax,rho0,xacrit,xbcrit,zcen,xacu,zsh
 
@@ -191,7 +196,9 @@ c-------------------------------------------------------------------
           
 c       real pi2,tshutoff,xacrit,xkcrit,xmcrit,xomega,uo,zcen,xbcrit,zdim
 
+    
      
+ 
 c      
 C-PD-2/20/02: COMMENT THIS LINE OUT AND ENTER YBAR THROUGH INPUT FILE
 C-YBAR: Height of domain.
@@ -277,7 +284,7 @@ C-OPEN OUTPUT FILES HERE
       open(64,file='limitcycle.dat',status='unknown')
       open(65,file='dtchange.dat')
       open(66,file='growthrate.dat')
-      open(67,file='animdump.log')
+      open(67,file='animdump.log',status='replace')
  
 C-OUTPUT FILE HEADERS
       write(51,*) 'VARIABLES = "CFLXMAX","I","J","K",
@@ -337,10 +344,15 @@ c ----begin operating conditions and material properties---
                             ! accommodate half a wavelength
        xomega=(bruntz(0.0,zlen,brunt)*xkcrit)
      >           /sqrt(xkcrit**2+xmcrit**2)      !-Wave Frequency
+
+       twave=pi2/xomega ! wave period 
+
+! JMS- why is this set to a constant value here?
+
        uo= 0.07
 
        cphx = xomega/xkcrit !-Wave horizontal phase speed
-
+             
 !-Output Background &  Wave Characteristics
 !
       write(6,*) '---------------------------------------------'
@@ -363,6 +375,7 @@ c ----begin operating conditions and material properties---
       write(6,*) 'Horizontal Phase Speed (m/s): ',cphx
       write(6,*) 'Horizontal and vertical wavenumbers (rad/m)',
      >           xkcrit,xmcrit
+      write(6,*) 'Reynolds number', cphx*xlen/xnu
       write(6,*) '---------------------------------------------'
 
        open(543,file='waveparams')
@@ -539,11 +552,28 @@ c-output initial u,v,w,T field
         bdfv = 1. 
         initenergy = 0
 
-      else 
+      else
+
+
+! JMS - changed this so that we can restart from the point where the forcing 
+!       was turned off and add noise to the BBL 
+
+!       fstart.dat is the data at the last step where forcing was on 
+
+        if(istart.eq.1) then
 
         open(8,file='start.dat',form='unformatted',status='unknown')
         call restart(8,t) 
         close(8)
+
+        elseif(istart.eq.2) then
+
+        open(8,file='fstart.dat',form='unformatted',status='unkown')
+        call restart(8,t)
+        close(8)
+        endif
+
+      
 
 C-CAREFUL: This is temporary because ra needs to be reset
 C-Startup value is 0.
@@ -605,6 +635,12 @@ C-BDF3-Variable timestep
         call postp(initenergy,t,brunt,tstart)
 
 !       call testdump(t,ybar,0,tstart)
+
+
+
+
+
+
       end if
 
       lnoise = .false.
@@ -924,6 +960,23 @@ c        lwrite = (iistep.eq.(istep+i0))
       enddo
 
 C-Dumps out output file (FOR RESTART PURPOSES) at regular intervals
+
+! JMS- needs to dump put restart file when we finish forcing with 
+!      the virtual paddles at time fwave*twave
+       
+        
+       if (t >= twave*fwave) then
+         if (t <= twave*fwave+dt) then 
+         write(*,*) 'DUMPING OUT RESTART FILE CLOSEST TO END OF FORCING'
+         write(*,*) 'twave = ', twave, 't=',t,'fwave=',fwave, 'dt=',dt
+         fout = 'fstart.dat'
+         open(3,file=fout,form='unformatted',status='unknown')
+         call output(3,t)
+         close(3)
+         endif 
+       endif
+        
+
       if (mod(istep,nrestartdump).eq.0) then
          write (*,*) 'DUMPING OUT RESTART FILE'
 c        f13 = 'run.dat.'
@@ -1002,10 +1055,11 @@ c        if (mod(istep,nwrt*2).eq.0) iflag=1
 c        call stressb
 c       endif
 
-      twave = pi2/xomega
+! JMS - defined this earlier in the code so i could use it 
+!      twave = pi2/xomega
 
-      if (t > 12.*twave) then
-        write(*,*) 'Max. run duration of 10 wave periods exceeded !'
+      if (t > waveperiods*twave) then
+        write(*,*) 'Max. run duration of wave periods exceeded !'
         stop
       endif
 

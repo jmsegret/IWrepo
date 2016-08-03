@@ -9,8 +9,8 @@ C-For a continuous method:
 C-If we have M subdomains: nz = M*(nzloc-1)+1 .
 C-nsubd = number of subdomains in vertical direction = M
 c-------------------------------------------------------------------
-      parameter   ( nx = 128, ny=1, nz= 250, nzloc = 25, nsubd = 10)
-      parameter   (nz2=65, nzaux= 68)
+      parameter   ( nx = 256, ny=1, nz= 300, nzloc = 25, nsubd = 12)
+      parameter   (nz2=289, nzaux= 68)
 
 c nsdtype...
 c	= 1 --> evenly spaced subdomains
@@ -25,5 +25,5 @@ c	= 3 --> read from file
      &              ntot2 = nxppy*nz2, nzm = nzloc - 1)
       parameter(nxhpy=nxhp*ny)     
 c     parameter(nz1=49,nzf=2*nz1)
-      parameter(nzfl=128,nzh = nzfl/2)
+      parameter(nzfl=96,nzh = nzfl/2)
 c-------------------------------------------------------------------

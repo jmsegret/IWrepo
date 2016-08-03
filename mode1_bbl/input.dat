@@ -4,9 +4,12 @@
    nsteps = 400,
    tanim =10000,
    iform =0,
-   cdtin = 1.0 $
+   cdtin = 1.0,
+   waveperiods = 15.0,
+   fwave = 8.0,
+   dtanim = 5.0 $
  $params
-    xlen = 40.0,
+    xlen = 20.0,
     ylen = 1.,
     zlen = 5.0,
     brunt = 0.2,

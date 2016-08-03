@@ -1,2 +1,2 @@
  VARIABLES="x","time","delN2","delN2_mid","delN2_pyc"
- ZONE I=         128 ,J=         101 , F=POINT
+ ZONE I=         256 ,J=         101 , F=POINT

@@ -26,7 +26,7 @@ FC77 = ifort
 
 # Intel Compiler Flags
 FFLAGS90 = 
-FFLAGS77 = -c -nogen-interfaces -autodouble -wrap-margin-  -O3 
+FFLAGS77 = -cpp -c -nogen-interfaces -autodouble -wrap-margin-  -O3 
 
 LIBS = -L/usr/local/lib -lm -mkl
 CMD = mode1.exe
